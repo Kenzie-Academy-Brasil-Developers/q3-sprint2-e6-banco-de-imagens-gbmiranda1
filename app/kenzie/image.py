@@ -3,6 +3,9 @@ from flask import jsonify,send_file, safe_join
 import os
 from pathlib import Path 
 
+if(not os.path.isdir("img")):
+        os.system(f"mkdir img")
+        
 files_direc = os.getenv("FILES_DIRECTORY")
 direc = os.listdir(files_direc)
 extensions = os.getenv("ALLOWED_EXTENSIONS") 

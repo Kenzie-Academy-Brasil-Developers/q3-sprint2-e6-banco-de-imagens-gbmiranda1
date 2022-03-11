@@ -1,4 +1,6 @@
 # Desenvolva suas rotas aqui
+from asyncio import exceptions
+from re import T
 from flask import Flask, jsonify, request, send_file, safe_join
 import os
 import zipfile
@@ -32,20 +34,23 @@ def getDownloadFile(arquivo):
 
 @app.get("/download-zip")
 def getDownloadZip():
-    extension = request.args["files_extension"]
-    compression = request.args["compression_ratio"]
+    try:
+        extension = request.args["files_extension"]
+        compression = request.args["compression_ratio"]
+        inputfile = os.path.join(file, extension)
+        pathOutput = os.path.join("/tmp", f"{extension}.zip")
 
-    inputfile = os.path.join(file, extension)
-    pathOutput = os.path.join("/tmp", f"{extension}.zip")
-
-    if extension in extensions.split(","):
-        if os.path.isfile(pathOutput):
-            os.remove(pathOutput)
-        if os.listdir(inputfile) == []:
-            return {"message": "empty"}, 404
-        os.system(f"zip -r -j -{compression} {pathOutput} {inputfile}")
-        return send_file(pathOutput, as_attachment=True)
-    return {"message": "we don't recognize this extension"}, 404
+        if extension in extensions.split(","):
+            if os.path.isfile(pathOutput):
+                os.remove(pathOutput)
+            if os.listdir(inputfile) == []:
+                return {"message": "empty"}, 404
+            os.system(f"zip -r -j -{compression} {pathOutput} {inputfile}")
+            send_file(pathOutput, as_attachment=True)
+            return jsonify({"message": f"zip generated here is your file path {pathOutput}"})
+        return {"message": "we don't recognize this extension"}, 404
+    except KeyError:
+        return {"message": "add query params"}, 404
 
 @app.post("/upload")
 def postFile():
